@@ -8,7 +8,7 @@ public class HelloController {
 
     @GetMapping("/api/hello")
     public String helloAzure() {
-        return "🚀 Hello from Azure Demo Service!";
+        return "🚀 Hello from Azure Demo Service! changes push to azure cloud";
     }
 
     @GetMapping("/api/health")
