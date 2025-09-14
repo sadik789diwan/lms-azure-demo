@@ -2,49 +2,50 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_REGISTRY = "mySpringBootRegistry.azurecr.io"
-        DOCKER_IMAGE = "lms-azure-demo"
+        ACR_NAME = "springbootacr12345"
+        IMAGE_NAME = "springboot-app"
+        IMAGE_TAG = "v${env.BUILD_NUMBER}"
+        RESOURCE_GROUP = "springboot-rg"
+        AKS_CLUSTER = "springboot-aks"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/sadik789diwan/lms-azure-demo.git'
+                git 'https://github.com/sadik789diwan/lms-azure-demo.git'
             }
         }
 
-        stage('Build & Unit Test') {
+        stage('Build') {
             steps {
-                sh 'mvn clean package -DskipTests=false'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQubeServer') {
+                withSonarQubeEnv('SonarQube') {
                     sh 'mvn sonar:sonar'
                 }
             }
         }
 
-        stage('Docker Build') {
+        stage('Docker Build & Push') {
             steps {
-                sh "docker build -t $DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER ."
-            }
-        }
-
-        stage('Push to ACR') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'azure-acr-creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                    sh "echo $PASSWORD | docker login $DOCKER_REGISTRY -u $USERNAME --password-stdin"
-                    sh "docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER"
-                }
+                sh """
+                  docker build -t $ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG .
+                  az acr login --name $ACR_NAME
+                  docker push $ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG
+                """
             }
         }
 
         stage('Deploy to AKS') {
             steps {
-                sh "kubectl set image deployment/springboot-deployment springboot-container=$DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER --record"
+                sh """
+                  az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --overwrite-existing
+                  kubectl set image deployment/$IMAGE_NAME $IMAGE_NAME=$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG --record
+                """
             }
         }
     }

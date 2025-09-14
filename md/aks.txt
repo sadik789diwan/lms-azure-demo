@@ -1,0 +1,62 @@
+C:\SadikPersonalInfo\GIT_CICD\lms-azure-demo>doskey /history
+az aks create  --resource-group springboot-rg --name springboot-aks --node-count 1 --enable-addons monitoring --generate-ssh-keys
+az aks update
+az aks update --resource-group MyResourceGroup --name MyManagedCluster --api-server-authorized-ip-ranges 0.0.0.0/32
+az group create --name springboot-rg --location eastus
+az aks create  --resource-group springboot-rg --name springboot-aks --node-count 1 --enable-addons monitoring --generate-ssh-keys
+az group create --name springboot-rg --location eastus
+az acr create --resource-group springboot-rg --name springbootacr12345 --sku Basic
+az acr login --name springbootacr12345
+docker build -t springbootacr12345.azurecr.io/springboot-app:v1 .
+docker push springbootacr12345.azurecr.io/springboot-app:v1
+az aks create --resource-group springboot-rg --name springboot-aks --node-count 1 --enable-addons monitoring --generate-ssh-keys --attach-acr springbootacr12345
+az aks get-credentials --resource-group springboot-rg --name springboot-aks
+az aks create \
+--resource-group springboot-rg \
+--name springboot-aks \
+--node-count 1 \
+--node-vm-size Standard_B2s \
+--enable-addons monitoring \
+--generate-ssh-keys \
+--attach-acr springbootacr12345
+az aks create  --resource-group springboot-rg  --name springboot-aks  --node-count 1 --node-vm-size Standard_B2s --enable-addons monitoring  --generate-ssh-keys  --attach-acr springbootacr12345
+az aks get-credentials --resource-group springboot-rg --name springboot-aks
+kubectl apply -f deployment.yaml
+kubectl get service springboot-service
+kubectl get pods
+kubectl get services
+kubectl get svc springboot-service
+kubectl get pods
+kubectl logs springboot-app-86df9fbc75-7l9mc
+kubectl get pods
+kubectl exec -it springboot-app-86df9fbc75-7l9mc -- curl http://localhost:9191/
+kubectl exec -it springboot-app-86df9fbc75-7l9mc -- curl http://localhost:8080/
+kubectl describe service springboot-service
+kubectl apply -f springboot-service.yaml
+kubectl apply -f deployment.yaml
+kubectl describe service deployment.yaml
+kubectl describe service springboot-service
+az network lb list --resource-group springboot-rg -o table
+kubectl get pods --server=https://springboot-springboot-rg-63ce54-3irfy866.hcp.eastus.azmk8s.io
+kubectl get service springboot-service
+az aks get-credentials --resource-group springboot-rg --name springboot-aks
+kubectl get nodes
+kubectl get pod
+kubectl get pods
+kubectl get svc
+kubectl get svc springboot-service
+kubectl port-forward svc/springboot-service 9191:80
+kubectl get pods
+kubectl describe pod springboot-app-764897b7d7-g9bm5
+doskey /history
+az group delete --name springboot-rg --yes --no-wait
+az group delete --name NetworkWatcherRG --yes --no-wait
+az group delete --name NetworkWatcherRGG --yes --no-wait
+az group delete --name NetworkWatcherRG --yes --no-wait
+az group delete --name learning-management-system-group --yes --no-wait
+az group delete --name DefaultResourceGroup-EUS --yes --no-wait
+az group delete --name DefaultResourceGroup-CCAN --yes --no-wait
+az group delete --name DefaultResourceGroup-EUS --yes --no-wait
+az group delete --name DefaultResourceGroup-CUS --yes --no-wait
+doskey /history
+C:\SadikPersonalInfo\GIT_CICD\lms-azure-demo>
