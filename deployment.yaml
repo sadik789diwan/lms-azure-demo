@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lms-azure-demo
+  template:
+    metadata:
+      labels:
+        app: lms-azure-demo
+    spec:
+      containers:
+        - name: springboot-container
+          image: mySpringBootRegistry.azurecr.io/lms-azure-demo:latest
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: lms-azure-demo
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

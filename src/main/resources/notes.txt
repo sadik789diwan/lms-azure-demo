@@ -6,3 +6,6 @@ git pull origin main --rebase
 git push -u origin main
 git pull --rebase → brings remote changes first, then applies your commits on top.
 git push -u origin main --force
+
+java -jar app.jar --spring.profiles.active=prod
+spring.profiles.active=dev,featureX

@@ -1,9 +1,14 @@
 package com.hasan.lms_azure_demo.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "products")
+@Data
+@AllArgsConstructor
 public class Product {
 
     @Id

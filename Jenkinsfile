@@ -2,59 +2,50 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "your-dockerhub-username/product-service"
-        VERSION = "${env.BUILD_NUMBER}"
+        DOCKER_REGISTRY = "mySpringBootRegistry.azurecr.io"
+        DOCKER_IMAGE = "lms-azure-demo"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/your-repo.git'
+                git branch: 'main', url: 'https://github.com/sadik789diwan/lms-azure-demo.git'
             }
         }
 
-        stage('Build') {
+        stage('Build & Unit Test') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh 'mvn clean package -DskipTests=false'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQubeServer') {
+                    sh 'mvn sonar:sonar'
+                }
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh "docker build -t $DOCKER_IMAGE:$VERSION ."
+                sh "docker build -t $DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER ."
             }
         }
 
-        stage('Docker Push') {
+        stage('Push to ACR') {
             steps {
-                withDockerRegistry([ credentialsId: 'dockerhub-credentials', url: '' ]) {
-                    sh "docker push $DOCKER_IMAGE:$VERSION"
+                withCredentials([usernamePassword(credentialsId: 'azure-acr-creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                    sh "echo $PASSWORD | docker login $DOCKER_REGISTRY -u $USERNAME --password-stdin"
+                    sh "docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER"
                 }
             }
         }
 
-        stage('Deploy to Azure') {
+        stage('Deploy to AKS') {
             steps {
-                withCredentials([azureServicePrincipal(credentialsId: 'azure-sp')]) {
-                    sh '''
-                    az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
-                    az webapp config container set \
-                        --name my-app-service \
-                        --resource-group my-resource-group \
-                        --docker-custom-image-name $DOCKER_IMAGE:$VERSION
-                    az webapp restart --name my-app-service --resource-group my-resource-group
-                    '''
-                }
+                sh "kubectl set image deployment/springboot-deployment springboot-container=$DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER --record"
             }
-        }
-    }
-
-    post {
-        success {
-            echo "Deployment successful!"
-        }
-        failure {
-            echo "Build or deployment failed!"
         }
     }
 }
